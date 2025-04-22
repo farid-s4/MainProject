@@ -1,14 +1,14 @@
-John Doe
-john123
-securePass
-10
-8c74fb7a-1203-4c05-90b6-a954d0382f49
-Toyota,Corolla,Sedan,2020,50000
+ivan
+ivan_driver
+pass123
+8
+0eee93da-92c9-482e-8696-6b354e3f6f06
+Toyota,Corolla,ComfortCar,2020,50000
 ##########
-John Doe
-john123
-securePass
-5
-d76c1d8f-da10-4692-8351-b13c3236d01f
-Toyota,Corolla,Sedan,2020,50000
+petr
+petr_driver
+pass456
+9
+23bee0a4-1e25-49fa-b56a-b54961e84d65
+Honda,Accord,EconomCar,2021,30000
 ##########

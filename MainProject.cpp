@@ -13,7 +13,7 @@ class Car
 protected:
     std::string _brand;
     std::string _model;
-    std::string _type; //sedan or SUV and other...
+    std::string _type; 
     unsigned short _year;
     unsigned int _mileage;
 public:
@@ -265,13 +265,13 @@ public:
 };
 class Driver : public User {
 private:
-    Car _car;
+    Car* _car;
     std::string _license_number;
 
 public:
     Driver() : User(), _car(), _license_number("00000000-0000-0000-0000-000000000000") {}
 
-    Driver(Car car, const std::string& user_name, const std::string& login,
+    Driver(Car* car, const std::string& user_name, const std::string& login,
            const std::string& password, const std::string& UUID, unsigned short rating): User(std::string(user_name),std::string(login), std::string(password), rating),
           _car(car), _license_number(UUID) {}
 
@@ -301,7 +301,7 @@ public:
     {
         _license_number = number;
     }
-    void set_car(const Car& car)
+    void set_car(Car* car)
     {
         _car = car;
     }
@@ -309,7 +309,7 @@ public:
         return _license_number;
     }
 
-    const Car& get_car() const {
+    Car* get_car() const {
         return _car;
     }
     void  generate_license_number()
@@ -338,9 +338,9 @@ public:
     {
         std::cout << _user_name << '\n' << _login
         <<'\n' << _password <<'\n' << _rating
-        <<'\n' << _license_number << '\n' << _car.getBrand()
-        << "," << _car.getModel() << "," << _car.getType()
-        << "," << _car.getYear() << "," << _car.getMileage() << '\n' << "##########" << '\n';
+        <<'\n' << _license_number << '\n' << _car->getBrand()
+        << "," << _car->getModel() << "," << _car->getType()
+        << "," << _car->getYear() << "," << _car->getMileage() << '\n' << "##########" << '\n';
     }
     
     bool write_driver(const std::string& filename)
@@ -352,9 +352,9 @@ public:
         }
         out << _user_name << '\n' << _login
         <<'\n' << _password <<'\n' << _rating
-        <<'\n' << _license_number << '\n' << _car.getBrand()
-        << "," << _car.getModel() << "," << _car.getType()
-        << "," << _car.getYear() << "," << _car.getMileage() << '\n'<< "##########" << '\n';
+        <<'\n' << _license_number << '\n' << _car->getBrand()
+        << "," << _car->getModel() << "," << _car->getType()
+        << "," << _car->getYear() << "," << _car->getMileage() << '\n'<< "##########" << '\n';
         out.close();
         return true;
     }
@@ -368,7 +368,7 @@ void read_drivers(std::string filename, std::vector<Driver>& data)
     std::string brand, model, type, year_str, mileage_str;
     unsigned short rating;
     Driver driver;
-    Car CAR;
+    Car* CAR;
     if (file.is_open()) {
         while (std::getline(file, name) && std::getline(file, login) && std::getline(file, password) &&  std::getline(file, ratingSTR)&& std::getline(file, license_number) && std::getline(file, car) && std::getline(file, line)) { 
             driver.set_name(name);
@@ -385,13 +385,23 @@ void read_drivers(std::string filename, std::vector<Driver>& data)
             std::getline(ss, mileage_str, ',');
             int year_ = std::stoi(year_str);
             int mileage_ = std::stoi(mileage_str);
-            CAR.setBrand(brand);
-            CAR.setModel(model);
-            CAR.setType(type);
-            CAR.setyear(static_cast<unsigned short>(year_));
-            CAR.setMileage(static_cast<unsigned int>(mileage_));
+            if (type == "econom") {
+                CAR = new EconomCar(brand, model, type, year_, mileage_);
+            } else if (type == "comfort") {
+                CAR = new ComfortCar(brand, model, type, year_, mileage_);
+            } else if (type == "business") {
+                CAR = new BusinessCar(brand, model, type, year_, mileage_);
+            } else {
+                CAR = new Car(brand, model, type, year_, mileage_);
+            }
+            CAR->setBrand(brand);  
+            CAR->setModel(model);
+            CAR->setType(type);
+            CAR->setyear(static_cast<unsigned short>(year_));
+            CAR->setMileage(static_cast<unsigned int>(mileage_));
             driver.set_car(CAR);
             data.push_back(driver);
+            
         }
 
         file.close(); 
@@ -412,12 +422,12 @@ void write_drivers(std::string filename, std::vector<Driver>& data)
         out << data[i].get_name() << '\n' << data[i].get_login()
         <<'\n' << data[i].get_password() <<'\n' << data[i].get_rating()
         <<'\n' << data[i].get_license_number() << '\n';
-        const Car& car = data[i].get_car();
-        out << car.getBrand() << ','
-            << car.getModel() << ','
-            << car.getType() << ','
-            << car.getYear() << ','
-            << car.getMileage() << '\n' << "##########" << '\n';
+        const Car* car = data[i].get_car();
+        out << car->getBrand() << ','
+            << car->getModel() << ','
+            << car->getType() << ','
+            << car->getYear() << ','
+            << car->getMileage() << '\n' << "##########" << '\n';
     }
     out.close();
 }
@@ -431,7 +441,7 @@ public:
     Client(Car car, const std::string& user_name, const std::string& login,
            const std::string& password, const std::string& UUID, unsigned short rating): User(std::string(user_name),std::string(login), std::string(password), rating),
           uuid_(UUID) {}
-
+    Client(const Client& other) : User(other), uuid_(other.uuid_){}
     Client(Client&& other) noexcept :  uuid_(std::move(other.uuid_)){}
     Client& operator=(Client&& other) noexcept
     {
@@ -506,7 +516,8 @@ void read_clients(std::string filename, std::vector<Client>& data)
     Client client;
 
     if (file.is_open()) {
-        while (std::getline(file, name) && std::getline(file, login) && std::getline(file, password) &&  std::getline(file, uuid) && std::getline(file, line)) { 
+        while (std::getline(file, name) && std::getline(file, login) && std::getline(file, password) && std::getline(file, ratingSTR) &&  std::getline(file, uuid) && std::getline(file, line)) {
+            
             client.set_name(name);
             client.set_login(login);
             client.set_password(password);
@@ -520,6 +531,7 @@ void read_clients(std::string filename, std::vector<Client>& data)
         throw FileOpenException();
     }
 }
+
 void write_clients(std::string filename, std::vector<Client>& data)
 {
     std::ofstream out(filename, std::ios::out);
@@ -536,41 +548,118 @@ void write_clients(std::string filename, std::vector<Client>& data)
     }
     out.close();
 }
-
-class Order
+enum class TripStatus { Created, InProgress, Completed };
+class Trip
 {
     private:
+    std::string _first_point;
+    std::string _last_point;
+    Driver _driver;
+    Client _client;
+    TripStatus _status;
+    double _price;
+    public:
+    Trip() : _first_point("unknown"), _last_point("unknown"), _driver(), _client(), _status(TripStatus::Created), _price(0.0) {}
+    Trip(std::string first_point, std::string last_point,Driver driver ,Client client, TripStatus status, double price)
+    : _first_point(first_point), _last_point(last_point), _driver(driver), _client(client), _status(status), _price(price) {}
+    Trip(const Trip& other) : _first_point(other._first_point), _last_point(other._last_point), _driver(other._driver), _client(other._client), _status(other._status), _price(other._price) {}
+    Trip& operator=(const Trip& other)
+    {
+        if (this != &other)
+        {
+            _first_point = other._first_point;
+            _last_point = other._last_point;
+            _driver = other._driver;
+            _client = other._client;
+            _status = other._status;
+            _price = other._price;
+        }
+        return *this;
+    }
+    void set_first_point(std::string first_point)
+    {
+        _first_point = first_point;
+    }
+    void set_last_point(std::string last_point)
+    {
+        _last_point = last_point;
+    }
+    void set_driver(Driver driver)
+    {
+        _driver = driver;
+    }
+    void set_client(Client client)
+    {
+        _client = client;
+    }
+    void set_status(TripStatus status)
+    {
+        _status = status;
+    }
+    void set_price(double price)
+    {
+        _price = price;
+    }
+    std::string get_first_point()
+    {
+        return _first_point;
+    }
+    std::string get_last_point()
+    {
+        return _last_point;
+    }
+    Driver get_driver()
+    {
+        return _driver;
+    }
+    Client get_client()
+    {
+        return _client;
+    }
+    TripStatus get_status()
+    {
+        return _status;
+    }
+    double get_price()
+    {
+        return _price;
+    }
+    
+    void create_order(std::string first, std::string last, Driver driver, Client client)
+    {
+        _first_point = first;
+        _last_point = last;
+        _driver = driver;
+        _client = client;
+        _status = TripStatus::InProgress;
+        _price = 0.0;
+    }
+    void calculate_price(Driver driver,const double distance)
+    {
+        Car* car = _driver.get_car();
+        if (car) {
+            _price = car->calculate_price(distance);
+        }
+        _status = TripStatus::Completed;
+    }
+    
 };
 
 int main()
 {
     try {
+        std::vector<Client> clients;
+        read_clients("clients.txt", clients);
+        std::cout << "=== Client data ===\n";
+        for (auto& c : clients)
+        {
+            std::cout << c.get_name() << ", " << c.get_login() << ", pass: " <<c.get_password() << " rating: " <<c.get_rating()<<", uuid: " << c.get_uuid()<< "\n";
+        }
+        std::string name = clients[1].get_name();
+        std::cout << "name: " << name << "\n";
 
-        EconomCar a("Toyota", "Corolla", "Sedan", 2020, 50000);
-        ComfortCar comfortCar("Honda", "Accord", "Sedan", 2021, 30000);
-        BusinessCar businessCar("BMW", "5 Series", "Sedan", 2022, 15000);
-
-
-        Client client;
-        client.genenerate_uuid();
-
-
-        Driver driver(static_cast<Car>(a), "John Doe", "john123", "securePass", "tempUUID", 5);
-        Driver driver2(static_cast<Car>(comfortCar), "1", "1", "1", "1", 5);
-        Driver driver3(static_cast<Car>(businessCar), "2", "2", "2", "2", 5);
-        driver.generate_license_number();
-        /*driver.write_driver("drivers.txt");*/
-        
-        std::vector<Driver> drivers;
-        read_drivers("drivers.txt", drivers);
-        drivers[0].printinfo();
-        drivers[1].printinfo();
-        drivers[0].set_rating(10);
-        drivers[0].printinfo();
-        write_drivers("drivers.txt", drivers);
-    }
-    catch (const std::exception& ex) {
-        std::cerr << "Error: " << ex.what() << '\n';
+    } catch (const std::exception& ex) {
+        std::cerr << "error: " << ex.what() << '\n';
     }
 
     return 0;
