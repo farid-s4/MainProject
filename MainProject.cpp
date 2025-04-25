@@ -5,167 +5,61 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include "Car.h"
+#include "CarType.h"
 class Client;
 class Driver;
 
-class Car
+
+class CarManager
 {
-protected:
-    std::string _brand;
-    std::string _model;
-    std::string _type; 
-    unsigned short _year;
-    unsigned int _mileage;
-public:
-    Car() : _brand("Unknown") , _model("Unknown") , _type("Unknown") , _year(0) , _mileage(0){}
-    Car(const std::string brand, const std::string model, const std::string type, unsigned short year , unsigned int mileage) : _brand(brand) , _model(model) , _type(type), _year(year), _mileage(mileage){}
-    Car(const Car& other)
-    {
-        _brand = other._brand;
-        _model = other._model;
-        _type = other._type;
-        _year = other._year;
-        _mileage = other._mileage;
-    }
-    Car(Car&& other) noexcept
-        : _brand(std::move(other._brand)), _model(std::move(other._model)), _type(std::move(other._type)),
-          _year(other._year), _mileage(other._mileage) {
-        other._year = 0;
-        other._mileage = 0;
-    }
-    Car& operator=(Car&& other) noexcept
+    private:
+    std::vector<Car*> cars;
+    public:
+    CarManager() : cars(){}
+    CarManager(std::vector<Car*> cars) : cars(cars){}
+    CarManager(const CarManager& other) : cars(other.cars) {}
+    CarManager& operator=(const CarManager& other)
     {
         if (this != &other)
         {
-            _brand = std::move(other._brand);
-            _model = std::move(other._model);
-            _type = std::move(other._type);
-            _year = other._year;
-            _mileage = other._mileage;
-            other._brand.clear();
-            other._model.clear();
-            other._type.clear();
-            other._year = 0;
-            other._mileage = 0;
+            cars = other.cars;
             return *this;
         }
         return *this;
-        
     }
-    Car& operator=(const Car& other)
+    CarManager(CarManager&& other) noexcept : cars(std::move(other.cars)) {}
+    CarManager& operator=(CarManager&& other) noexcept
     {
-        if (this != &other) {
-            _brand = other._brand;
-            _model = other._model;
-            _type = other._type;
-            _year = other._year;
-            _mileage = other._mileage;
+        if (this != &other)
+        {
+            cars = std::move(other.cars);
+            return *this;
         }
         return *this;
     }
-    std::string getBrand() const {
-        return _brand;
-    }
-
-    std::string getModel() const {
-        return _model;
-    }
-
-    std::string getType() const {
-        return _type;
-    }
-
-    unsigned short getYear() const {
-        return _year;
-    }
-
-    unsigned int  getMileage() const {
-        return _mileage;
-    }
-    
-    void setBrand(const std::string& brand)
+    void redact_car(unsigned int index, std::string brand, std::string model, std::string type, unsigned short year, unsigned int mileage)
     {
-        _brand = brand;
+        if (index < cars.size())
+        {
+            cars[index]->update_car_info(brand, model, type, year, mileage);
+        }
+        
     }
-    void setModel(const std::string& model)
+    bool maintence(int index)
     {
-        _model = model;
+        if (index < cars.size())
+        {
+            if (cars[index]->maintence())
+            {
+                return true;
+            }
+            
+        }
+        return false;
     }
-    void setType(const std::string& type)
-    {
-        _type = type;
-    }
-    void setyear(unsigned short year)
-    {
-        _year = year;
-    }
-    void setMileage(unsigned int mileage)
-    {
-        _mileage = mileage;
-    }
-    virtual double calculate_price(const double& distanse)
-    {
-        return distanse;
-    }
-    virtual ~Car(){}
 };
 
-class EconomCar : public Car
-{
-public:
-    EconomCar(std::string brand, std::string model, std::string type, unsigned short year, unsigned int mileage)
-    : Car(brand, model, type, year, mileage) {}
-
-    double calculate_price(const double& distanse) override
-    {
-        double one_km_price = 2;
-        if (distanse > 0)
-        {
-            return distanse*one_km_price;
-        }
-        else
-        {
-            throw std::invalid_argument("Write correct distance.");
-        }
-    }
-    EconomCar() = default;
-    
-};
-class ComfortCar : public Car
-{
-public:
-    ComfortCar(std::string brand, std::string model, std::string type, unsigned short year, unsigned int mileage): Car(brand, model, type, year, mileage) {}
-    double calculate_price(const double& distanse) override
-    {
-        double one_km_price = 3.5;
-        if (distanse > 0)
-        {
-            return distanse*one_km_price;
-        }
-        else
-        {
-            throw std::invalid_argument("Write correct distance.");
-        }
-    }
-    
-};
-class BusinessCar : public Car
-{
-public:
-    BusinessCar(std::string brand, std::string model, std::string type, unsigned short year, unsigned int mileage): Car(brand, model, type, year, mileage) {}
-    double calculate_price(const double& distanse) override
-    {
-        double one_km_price = 5;
-        if (distanse > 0)
-        {
-            return distanse*one_km_price;
-        }
-        else
-        {
-            throw std::invalid_argument("Write correct distance.");
-        }
-    }
-};
 class User
 {
 protected:
@@ -277,21 +171,27 @@ public:
 
     Driver(const Driver& other): User(other), _car(other._car), _license_number(other._license_number) {}
 
-
+    Driver(Driver&& other) noexcept : User(std::move(other))
+    {
+        _car = std::move(other._car);
+        _license_number = std::move(other._license_number);
+    }
     Driver& operator=(Driver&& other) noexcept
     {
         if (this != &other)
         {
+            User::operator=(std::move(other));
             _car = std::move(other._car);
             _license_number = std::move(other._license_number);
             return *this;
         }
         return *this;
     }
-    Driver& operator=(const Driver& other)
+    Driver& operator=(const Driver& other) 
     {
         if (this != &other)
         {
+            User::operator=(other);
             _car = other._car;
             _license_number = other._license_number;
         }
@@ -397,7 +297,7 @@ void read_drivers(std::string filename, std::vector<Driver>& data)
             CAR->setBrand(brand);  
             CAR->setModel(model);
             CAR->setType(type);
-            CAR->setyear(static_cast<unsigned short>(year_));
+            CAR->setYear(static_cast<unsigned short>(year_));
             CAR->setMileage(static_cast<unsigned int>(mileage_));
             driver.set_car(CAR);
             data.push_back(driver);
@@ -442,11 +342,12 @@ public:
            const std::string& password, const std::string& UUID, unsigned short rating): User(std::string(user_name),std::string(login), std::string(password), rating),
           uuid_(UUID) {}
     Client(const Client& other) : User(other), uuid_(other.uuid_){}
-    Client(Client&& other) noexcept :  uuid_(std::move(other.uuid_)){}
+    Client(Client&& other) noexcept : User(std::move(other)),  uuid_(std::move(other.uuid_)){}
     Client& operator=(Client&& other) noexcept
     {
         if (this != &other)
         {
+            User::operator=(std::move(other));
             uuid_ = std::move(other.uuid_);
             return *this;
         }
@@ -456,6 +357,7 @@ public:
     {
         if (this != &other)
         {
+            User::operator=(other);
             uuid_ = other.uuid_;
         }
         return *this;
@@ -551,17 +453,19 @@ void write_clients(std::string filename, std::vector<Client>& data)
 enum class TripStatus { Created, InProgress, Completed };
 class Trip
 {
-    private:
+private:
     std::string _first_point;
     std::string _last_point;
     Driver _driver;
     Client _client;
     TripStatus _status;
     double _price;
-    public:
+public:
     Trip() : _first_point("unknown"), _last_point("unknown"), _driver(), _client(), _status(TripStatus::Created), _price(0.0) {}
+    
     Trip(std::string first_point, std::string last_point,Driver driver ,Client client, TripStatus status, double price)
     : _first_point(first_point), _last_point(last_point), _driver(driver), _client(client), _status(status), _price(price) {}
+    
     Trip(const Trip& other) : _first_point(other._first_point), _last_point(other._last_point), _driver(other._driver), _client(other._client), _status(other._status), _price(other._price) {}
     Trip& operator=(const Trip& other)
     {
@@ -612,6 +516,14 @@ class Trip
     {
         return _driver;
     }
+    std::string get_driver_name()
+    {
+        return _driver.get_name();
+    }
+    unsigned short get_driver_rating()
+    {
+        return _driver.get_rating();
+    }
     Client get_client()
     {
         return _client;
@@ -625,14 +537,19 @@ class Trip
         return _price;
     }
     
-    void create_order(std::string first, std::string last, Driver driver, Client client)
+    bool create_order(std::string first, std::string last, Driver driver, Client client, unsigned short order_rating)
     {
-        _first_point = first;
-        _last_point = last;
-        _driver = driver;
-        _client = client;
-        _status = TripStatus::InProgress;
-        _price = 0.0;
+        if (order_rating == driver.get_rating())
+        {
+            _first_point = first;
+            _last_point = last;
+            _driver = driver;
+            _client = client;
+            _status = TripStatus::InProgress;
+            _price = 0.0;
+            return true;
+        }
+        return false;
     }
     void calculate_price(Driver driver,const double distance)
     {
@@ -645,22 +562,52 @@ class Trip
     
 };
 
+void write_orders(const std::string& filename, std::vector<Trip>& data)
+{
+    std::ofstream out(filename);
+
+    if (!out)
+    {
+        throw FileOpenException();
+    }
+    for (int i = 0; i < data.size(); i++)
+    {
+        out << data[i].get_first_point() <<'\n' <<data[i].get_last_point() <<'\n'<< data[i].get_price() <<'\n'<< data[i].get_driver_name() << '\n' << data[i].get_driver_rating()<<'\n'<< "----------" << '\n';
+    }
+    out.close();
+}
+
 int main()
 {
     try {
         std::vector<Client> clients;
-        read_clients("clients.txt", clients);
-        std::cout << "=== Client data ===\n";
-        for (auto& c : clients)
-        {
-            std::cout << c.get_name() << ", " << c.get_login() << ", pass: " <<c.get_password() << " rating: " <<c.get_rating()<<", uuid: " << c.get_uuid()<< "\n";
-        }
-        std::string name = clients[1].get_name();
-        std::cout << "name: " << name << "\n";
-
-    } catch (const std::exception& ex) {
+        
+        EconomCar a("Toyota", "Corolla", "Sedan", 2020, 50000);
+        BusinessCar comfortCar("Honda", "Accord", "Sedan", 2021, 30000);
+        ComfortCar businessCar("BMW", "5 Series", "Sedan", 2022, 15000);
+ 
+ 
+        Client client;
+        client.genenerate_uuid();
+ 
+ 
+        Driver driver(&a, "John Doe", "john123", "securePass", "tempUUID", 5);
+        Driver driver2(&comfortCar, "1", "1", "1", "1", 5);
+        Driver driver3(&businessCar, "2", "2", "2", "2", 5);
+        driver.generate_license_number();
+        
+        std::vector<Trip> trips;
+        Trip trip;
+        driver.printinfo();
+        trip.create_order("28 may", "Genclik", driver, client, 5);
+        trip.calculate_price(driver, 2);
+        trips.push_back(trip);
+        std::cout<<trips[0].get_driver_name();
+        write_orders("orders.txt", trips);
+    }
+    catch (const std::exception& ex) {
         std::cerr << "error: " << ex.what() << '\n';
     }
-
+ 
     return 0;
 }
