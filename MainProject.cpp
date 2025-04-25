@@ -9,7 +9,7 @@
 #include "Client.h"
 #include "Trip.h"
 
-int main()
+int main() //CLEAR AND FİX DATA İN READ!
 {
     try {
         std::vector<Client> clients;
