@@ -180,12 +180,24 @@ void read_drivers(const std::string& filename, std::vector<Driver>& data)
         unsigned int mileage;
         in.read(reinterpret_cast<char*>(&mileage), sizeof(unsigned int));
 
-        
-        Car* car = new Car(brand, model, type, year, mileage);
+        Car* car = nullptr;
+        /*Car* car = new Car(brand, model, type, year, mileage);*/
+        if (type == "econom")
+        {
+            car = new EconomCar(brand, model, type, year, mileage);
+        }
+        else if (type == "comfort")
+        {
+            car = new ComfortCar(brand, model, type, year, mileage);
+        }
+        else if (type == "business")
+        {
+            car = new BusinessCar(brand, model, type, year, mileage);
+        }
         Driver driver(car, name, login, password, license, rating);
 
         data.push_back(driver);
     }
-
+    
     in.close();
 }

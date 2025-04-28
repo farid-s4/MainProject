@@ -493,7 +493,3 @@ void print_drivers()
         std::cout << drivers[i].get_car()->getMileage() << '\n';
     }
 }
-void print_clients()
-{
-    
-}

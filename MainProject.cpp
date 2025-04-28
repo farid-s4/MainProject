@@ -1,8 +1,5 @@
 #pragma comment(lib, "rpcrt4.lib")
 #include "interface.h"
-#include "Driver.h"
-#include "Car.h"
-#include "CarType.h"
 
 int main() //CLEAR AND FİX DATA İN READ!
 {
