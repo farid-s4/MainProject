@@ -86,7 +86,6 @@ bool Trip::create_order(std::string first, std::string last, Driver driver, Clie
         _driver = driver;
         _client = client;
         _status = TripStatus::InProgress;
-        _price = 0.0;
         return true;
     }
     return false;
@@ -111,7 +110,60 @@ void write_orders(const std::string& filename, std::vector<Trip>& data)
     }
     for (int i = 0; i < data.size(); i++)
     {
-        out << data[i].get_first_point() <<'\n' <<data[i].get_last_point() <<'\n'<< data[i].get_price() <<'\n'<< data[i].get_driver_name() << '\n' << data[i].get_driver_rating()<<'\n'<< "----------" << '\n';
+        out << data[i].get_first_point() << '\n'
+            << data[i].get_last_point() << '\n'
+            << data[i].get_driver().get_name() << '\n'
+            << data[i].get_driver().get_login() << '\n'
+            << data[i].get_client().get_name() << '\n'
+            << data[i].get_client().get_login() << '\n'
+            << static_cast<int>(data[i].get_status()) << '\n'  
+            << data[i].get_price() << '\n';
     }
     out.close();
+}
+void read_orders(const std::string& filename, std::vector<Trip>& data)
+{
+    std::ifstream fin(filename);
+    if (!fin)
+    {
+        throw std::exception();
+    }
+
+    data.clear(); 
+
+    std::string first_point, last_point, driver_name, client_name, driver_login, client_login;
+    double price;
+    int status;
+    std::string separator;
+
+    while (std::getline(fin, first_point))
+    {
+        if (!std::getline(fin, first_point)) break;
+        if (!std::getline(fin, last_point)) break;
+        if (!std::getline(fin, driver_name)) break;
+        if (!std::getline(fin, driver_login)) break;
+        if (!std::getline(fin, client_name)) break;
+        if (!std::getline(fin, client_login)) break;
+        if (!(fin >> status)) break;
+        if (!(fin >> price)) break; 
+        fin.ignore();
+        Driver driver;
+        driver.set_name(driver_name);
+        driver.set_login(driver_login);
+
+        Client client;
+        client.set_name(client_name);
+        client.set_login(client_login);
+
+        Trip trip;
+        trip.set_first_point(first_point);
+        trip.set_last_point(last_point);
+        trip.set_driver(driver);
+        trip.set_client(client);
+        trip.set_status(static_cast<TripStatus>(status));
+        trip.set_price(price);
+
+        data.push_back(trip);
+    }
+    fin.close();
 }

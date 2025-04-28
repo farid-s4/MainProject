@@ -1,7 +1,7 @@
 ﻿#include "User.h"
 
 #include <stdexcept>
-User::User(): _user_name("Unknown"), _login("Unknown"), _password("Unknown"), _rating(0) {}
+User::User(): _user_name("Unknown"), _login("Unknown"), _password("Unknown"), _rating(1) {}
 User::User(const std::string& user_name, const std::string& login, const std::string& password, unsigned short rating) : _user_name(user_name), _login(login), _password(password), _rating(rating) {}
 User::User(const User& other)
     : _user_name(other._user_name),
@@ -63,7 +63,7 @@ const std::string& User::get_password() const {
 }
 unsigned short User::set_rating(unsigned short rating)
 {
-    if (rating > 0 && rating <= 10)
+    if (rating > 0 && rating < 11)
     {
         _rating = rating;
         return _rating;

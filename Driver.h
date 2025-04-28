@@ -30,15 +30,13 @@ public:
     const std::string& get_license_number() const;
 
     Car* get_car() const;
-
+    unsigned short get_rating() const;
     void  generate_license_number();
     
     unsigned short count = 0;
-    void rate_driver(Driver& driver, unsigned short rating) override;
     
     void printinfo();
-    bool write_driver(const std::string& filename);
 };
 
-void read_drivers(std::string filename, std::vector<Driver>& data);
-void write_drivers(std::string filename, std::vector<Driver>& data);
+void read_drivers(const std::string& filename, std::vector<Driver>& data);
+void write_drivers(const std::string& filename, const std::vector<Driver>& data);

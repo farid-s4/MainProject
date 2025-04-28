@@ -1,11 +1,12 @@
 ﻿#include "Client.h"
 
+#include <iostream>
 #include <windows.h>
 
 
 Client::Client() : uuid_("00000000-0000-0000-0000-000000000000"){}
 Client::Client(std::string UUID) : uuid_(UUID){}
-Client::Client(Car car, const std::string& user_name, const std::string& login,
+Client::Client(const std::string& user_name, const std::string& login,
        const std::string& password, const std::string& UUID, unsigned short rating): User(std::string(user_name),std::string(login), std::string(password), rating),
       uuid_(UUID) {}
 Client::Client(const Client& other) : User(other), uuid_(other.uuid_){}
@@ -33,6 +34,10 @@ void Client::set_uuid(std::string UUID)
 {
     uuid_ = UUID;
 }
+const std::string Client::get_name()
+{
+    return _user_name;
+}
 const std::string& Client::get_uuid()
 {
     return uuid_;
@@ -51,68 +56,98 @@ void Client::genenerate_uuid()
 }
 
 
-void Client::rate_client(Client& client, unsigned short rating) 
+void Client::rate_client(unsigned short rating) 
 {
+    
     if (count == 0)
     {
-        client.set_rating(rating);
+        _rating = rating;
     }
-    count += 1;
-    client.set_rating((_rating + rating) / 2);
-    
-}
-
-bool Client::write_client(const std::string& filename)
-{
-    std::ofstream out(filename, std::ios::app);
-    if (!out)
+    else
     {
-        throw std::exception();
+        
+        _rating = ((_rating * count) + rating) / (count + 1);
     }
-    out << _user_name << '\n' << _login
-    <<'\n' << _password <<'\n' << _rating
-    <<'\n' << uuid_ << '\n' <<"##########" << '\n';
-    out.close();
-    return true;
+    
+    count += 1;
 }
 
-void read_clients(std::string filename, std::vector<Client>& data)
+void Client::print_info() const
 {
-    std::ifstream file(filename); 
-    std::string name, login, password, ratingSTR, uuid, line;
-    unsigned short rating;
-    Client client;
-
-    if (file.is_open()) {
-        while (std::getline(file, name) && std::getline(file, login) && std::getline(file, password) && std::getline(file, ratingSTR) &&  std::getline(file, uuid) && std::getline(file, line)) {
-            
-            client.set_name(name);
-            client.set_login(login);
-            client.set_password(password);
-            int temp_rating = std::stoi(ratingSTR);
-            client.set_rating(rating = static_cast<unsigned short>(temp_rating));
-            client.set_uuid(uuid);
-            data.push_back(client);
-        }
-        file.close(); 
-    } else {
-        throw std::exception();
-    }
+    std::cout << _login << std::endl;
+    std::cout << _user_name << std::endl;
+    std::cout << _rating << std::endl;
+    std::cout << _password << std::endl;
+    std::cout << uuid_ << std::endl;
 }
 
 void write_clients(std::string filename, std::vector<Client>& data)
 {
-    std::ofstream out(filename, std::ios::out);
+    std::ofstream out(filename, std::ios::binary);
+
     if (!out)
     {
         throw std::exception();
     }
-    
+
     for (int i = 0; i < data.size(); i++)
     {
-        out << data[i].get_name() << '\n' << data[i].get_login()
-        <<'\n' << data[i].get_password() <<'\n' << data[i].get_rating()
-        <<'\n' << data[i].get_uuid() << '\n' << "##########" << '\n';
+        size_t user_name_size = data[i].get_name().size();
+        size_t login_size = data[i].get_login().size();
+        size_t password_size = data[i].get_password().size();
+        size_t uuiq_size = data[i].get_uuid().size();
+        out.write(reinterpret_cast<char*>(&user_name_size), sizeof(size_t));
+        out.write(data[i].get_name().c_str(), user_name_size);
+
+        out.write(reinterpret_cast<char*>(&login_size), sizeof(size_t));
+        out.write(data[i].get_login().c_str(), login_size);
+
+        out.write(reinterpret_cast<char*>(&password_size), sizeof(size_t));
+        out.write(data[i].get_password().c_str(), password_size);
+
+        out.write(reinterpret_cast<char*>(&uuiq_size), sizeof(size_t));
+        out.write(data[i].get_uuid().c_str(), uuiq_size);
+
+        unsigned short rating = data[i].get_rating();
+        out.write(reinterpret_cast<char*>(&rating), sizeof(unsigned short));
     }
     out.close();
+}
+
+void read_clients(std::string filename, std::vector<Client>& data) {
+    std::ifstream fin(filename, std::ios::binary);
+    if (!fin) {
+        throw std::runtime_error("Не удалось открыть файл для чтения");
+    }
+
+    while (fin.peek() != EOF) {
+        size_t user_name_size, login_size, password_size, uuid_size;
+        std::string user_name, login, password, uuid;
+        unsigned short rating;
+
+        if (!fin.read(reinterpret_cast<char*>(&user_name_size), sizeof(size_t))) break;
+        user_name.resize(user_name_size);
+        if (!fin.read(&user_name[0], user_name_size)) break;
+
+        if (!fin.read(reinterpret_cast<char*>(&login_size), sizeof(size_t))) break;
+        login.resize(login_size);
+        if (!fin.read(&login[0], login_size)) break;
+
+        if (!fin.read(reinterpret_cast<char*>(&password_size), sizeof(size_t))) break;
+        password.resize(password_size);
+        if (!fin.read(&password[0], password_size)) break;
+
+        if (!fin.read(reinterpret_cast<char*>(&uuid_size), sizeof(size_t))) break;
+        uuid.resize(uuid_size);
+        if (!fin.read(&uuid[0], uuid_size)) break;
+
+        if (!fin.read(reinterpret_cast<char*>(&rating), sizeof(unsigned short))) break;
+
+        Client client(user_name, login, password, uuid, rating);
+        data.push_back(client);
+    }
+
+    if (!fin.eof()) {
+        throw std::runtime_error("Ошибка при чтении данных из файла");
+    }
 }

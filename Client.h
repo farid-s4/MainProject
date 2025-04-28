@@ -15,7 +15,7 @@ private:
 public:
     Client();
     Client(std::string UUID);
-    Client(Car car, const std::string& user_name, const std::string& login,
+    Client(const std::string& user_name, const std::string& login,
            const std::string& password, const std::string& UUID, unsigned short rating);
     Client(const Client& other);
     Client(Client&& other) noexcept;
@@ -26,13 +26,12 @@ public:
     const std::string& get_uuid();
     
     void genenerate_uuid();
-
-    
     unsigned short count = 0;
-    void rate_client(Client& client, unsigned short rating) override;
+    void rate_client(unsigned short rating);
 
-    
-    bool write_client(const std::string& filename);
+    void print_info() const;
+
+    const std::string get_name();
 };
 
 void read_clients(std::string filename, std::vector<Client>& data);

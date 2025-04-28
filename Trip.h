@@ -51,3 +51,4 @@ public:
 };
 
 void write_orders(const std::string& filename, std::vector<Trip>& data);
+void read_orders(const std::string& filename, std::vector<Trip>& data);
