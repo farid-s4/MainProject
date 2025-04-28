@@ -28,7 +28,8 @@ public:
     const std::string& get_password() const;
 
     unsigned short set_rating(unsigned short rating);
-    unsigned short get_rating();
+    unsigned short get_rating() const;
+
 
     virtual void rate_driver(Driver& driver,unsigned short rating) {}
     virtual void rate_client(Client& client, unsigned short rating) {}

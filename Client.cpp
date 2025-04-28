@@ -117,7 +117,7 @@ void write_clients(std::string filename, std::vector<Client>& data)
 void read_clients(std::string filename, std::vector<Client>& data) {
     std::ifstream fin(filename, std::ios::binary);
     if (!fin) {
-        throw std::runtime_error("Не удалось открыть файл для чтения");
+        throw std::runtime_error("Can not open file");
     }
 
     while (fin.peek() != EOF) {
@@ -148,6 +148,6 @@ void read_clients(std::string filename, std::vector<Client>& data) {
     }
 
     if (!fin.eof()) {
-        throw std::runtime_error("Ошибка при чтении данных из файла");
+        throw std::runtime_error("Error in read file");
     }
 }

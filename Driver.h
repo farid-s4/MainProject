@@ -30,7 +30,6 @@ public:
     const std::string& get_license_number() const;
 
     Car* get_car() const;
-    unsigned short get_rating() const;
     void  generate_license_number();
     
     unsigned short count = 0;

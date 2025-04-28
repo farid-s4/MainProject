@@ -72,10 +72,6 @@ void Driver::printinfo()
     << "," << _car->getModel() << "," << _car->getType()
     << "," << _car->getYear() << "," << _car->getMileage() << '\n' << "##########" << '\n';
 }
-unsigned short Driver::get_rating() const
-{
-    return _rating;
-}
 
 void write_drivers(const std::string& filename, const std::vector<Driver>& data)
 {
@@ -85,32 +81,45 @@ void write_drivers(const std::string& filename, const std::vector<Driver>& data)
         throw std::runtime_error("Failed to open file for writing!");
     }
 
-    for (const auto& driver : data)
+    for (size_t i = 0; i < data.size(); i++)
     {
-        auto write_string = [&](const std::string& str) {
-            size_t str_size = str.size();
-            out.write(reinterpret_cast<const char*>(&str_size), sizeof(size_t));
-            out.write(str.data(), str_size);
-        };
+        size_t user_name_size = data[i].get_name().size();
+        size_t login_size = data[i].get_login().size();
+        size_t password_size = data[i].get_password().size();
+        size_t license_size = data[i].get_license_number().size();
+        out.write(reinterpret_cast<char*>(&user_name_size), sizeof(size_t));
+        out.write(data[i].get_name().c_str(), user_name_size);
 
-        write_string(driver.get_name());
-        write_string(driver.get_login());
-        write_string(driver.get_password());
-        write_string(driver.get_license_number());
+        out.write(reinterpret_cast<char*>(&login_size), sizeof(size_t));
+        out.write(data[i].get_login().c_str(), login_size);
 
-        unsigned short rating = driver.get_rating();
-        out.write(reinterpret_cast<const char*>(&rating), sizeof(unsigned short));
+        out.write(reinterpret_cast<char*>(&password_size), sizeof(size_t));
+        out.write(data[i].get_password().c_str(), password_size);
 
-        Car* car = driver.get_car();
-        write_string(car->getBrand());
-        write_string(car->getModel());
-        write_string(car->getType());
+        out.write(reinterpret_cast<char*>(&license_size), sizeof(size_t));
+        out.write(data[i].get_license_number().c_str(), license_size);
 
-        unsigned short year = car->getYear();
-        unsigned int mileage = car->getMileage();
+        unsigned short rating = data[i].get_rating();
+        out.write(reinterpret_cast<char*>(&rating), sizeof(unsigned short));
+        size_t car_brand = data[i].get_car()->getBrand().size();
+        size_t car_model = data[i].get_car()->getModel().size();
+        size_t car_type = data[i].get_car()->getType().size();
+        
+        out.write(reinterpret_cast<char*>(&car_brand), sizeof(size_t));
+        out.write(data[i].get_car()->getBrand().c_str(), car_brand);
+        
+        out.write(reinterpret_cast<char*>(&car_model), sizeof(size_t));
+        out.write(data[i].get_car()->getModel().c_str(), car_model);
+        
+        out.write(reinterpret_cast<char*>(&car_type), sizeof(size_t));
+        out.write(data[i].get_car()->getType().c_str(), car_type);
 
-        out.write(reinterpret_cast<const char*>(&year), sizeof(unsigned short));
-        out.write(reinterpret_cast<const char*>(&mileage), sizeof(unsigned int));
+        unsigned short year = data[i].get_car()->getYear();
+        out.write(reinterpret_cast<char*>(&year), sizeof(unsigned short));
+
+        unsigned int mileage = data[i].get_car()->getMileage();
+        out.write(reinterpret_cast<char*>(&mileage), sizeof(unsigned int));
+        
     }
 
     out.close();
@@ -125,74 +134,58 @@ void read_drivers(const std::string& filename, std::vector<Driver>& data)
         throw std::runtime_error("Failed to open file for reading!");
     }
 
-    data.clear(); 
-    
-    while (in.peek() != EOF) 
+    while (in.peek() != EOF)
     {
-        Driver driver;
-        std::string temp_str;
-        size_t str_size;
-        
-        in.read(reinterpret_cast<char*>(&str_size), sizeof(size_t));
-        temp_str.resize(str_size);
-        in.read(&temp_str[0], str_size);
-        driver.set_name(temp_str);
-        in.read(reinterpret_cast<char*>(&str_size), sizeof(size_t));
-        temp_str.resize(str_size);
-        in.read(&temp_str[0], str_size);
-        driver.set_login(temp_str);
-        in.read(reinterpret_cast<char*>(&str_size), sizeof(size_t));
-        temp_str.resize(str_size);
-        in.read(&temp_str[0], str_size);
-        driver.set_password(temp_str);
-        in.read(reinterpret_cast<char*>(&str_size), sizeof(size_t));
-        temp_str.resize(str_size);
-        in.read(&temp_str[0], str_size);
-        driver.set_license_number(temp_str);
-        
+        size_t user_name_size;
+        in.read(reinterpret_cast<char*>(&user_name_size), sizeof(size_t));
+        std::string name(user_name_size, '\0');
+        in.read(&name[0], user_name_size);
+
+        size_t login_size;
+        in.read(reinterpret_cast<char*>(&login_size), sizeof(size_t));
+        std::string login(login_size, '\0');
+        in.read(&login[0], login_size);
+
+        size_t password_size;
+        in.read(reinterpret_cast<char*>(&password_size), sizeof(size_t));
+        std::string password(password_size, '\0');
+        in.read(&password[0], password_size);
+
+        size_t license_size;
+        in.read(reinterpret_cast<char*>(&license_size), sizeof(size_t));
+        std::string license(license_size, '\0');
+        in.read(&license[0], license_size);
+
         unsigned short rating;
         in.read(reinterpret_cast<char*>(&rating), sizeof(unsigned short));
-        driver.set_rating(rating);
-        
-        in.read(reinterpret_cast<char*>(&str_size), sizeof(size_t));
-        temp_str.resize(str_size);
-        in.read(&temp_str[0], str_size);
-        std::string car_class = temp_str;
-        in.read(reinterpret_cast<char*>(&str_size), sizeof(size_t));
-        temp_str.resize(str_size);
-        in.read(&temp_str[0], str_size);
-        std::string brand = temp_str;
-        in.read(reinterpret_cast<char*>(&str_size), sizeof(size_t));
-        temp_str.resize(str_size);
-        in.read(&temp_str[0], str_size);
-        std::string model = temp_str;
-        in.read(reinterpret_cast<char*>(&str_size), sizeof(size_t));
-        temp_str.resize(str_size);
-        in.read(&temp_str[0], str_size);
-        std::string type = temp_str;
+
+        size_t brand_size;
+        in.read(reinterpret_cast<char*>(&brand_size), sizeof(size_t));
+        std::string brand(brand_size, '\0');
+        in.read(&brand[0], brand_size);
+
+        size_t model_size;
+        in.read(reinterpret_cast<char*>(&model_size), sizeof(size_t));
+        std::string model(model_size, '\0');
+        in.read(&model[0], model_size);
+
+        size_t type_size;
+        in.read(reinterpret_cast<char*>(&type_size), sizeof(size_t));
+        std::string type(type_size, '\0');
+        in.read(&type[0], type_size);
 
         unsigned short year;
         in.read(reinterpret_cast<char*>(&year), sizeof(unsigned short));
+
         unsigned int mileage;
         in.read(reinterpret_cast<char*>(&mileage), sizeof(unsigned int));
 
         
-        Car* CAR = nullptr;
-        if (car_class == "econom") {
-            CAR = new EconomCar(brand, model, type, year, mileage);
-        } else if (car_class == "comfort") {
-            CAR = new ComfortCar(brand, model, type, year, mileage);
-        } else if (car_class == "business") {
-            CAR = new BusinessCar(brand, model, type, year, mileage);
-        } else {
-            CAR = new Car(brand, model, type, year, mileage);
-        }
+        Car* car = new Car(brand, model, type, year, mileage);
+        Driver driver(car, name, login, password, license, rating);
 
-        driver.set_car(CAR);
         data.push_back(driver);
-        
     }
 
     in.close();
-    
 }

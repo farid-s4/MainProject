@@ -74,7 +74,7 @@ unsigned short User::set_rating(unsigned short rating)
     }
 }
 
-unsigned short User::get_rating()
+unsigned short User::get_rating() const
 {
     return _rating;
 }

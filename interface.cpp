@@ -9,7 +9,7 @@ void loadClients()
 {
     try
     {
-        read_clients(R"(C:\Users\farid\RiderProjects\MainProject\AllData\clients.bin)",clients);
+        read_clients(R"(AllData/clients.bin)",clients);
     }
     catch (const std::exception& e)
     {

@@ -1,5 +1,8 @@
 #pragma comment(lib, "rpcrt4.lib")
 #include "interface.h"
+#include "Driver.h"
+#include "Car.h"
+#include "CarType.h"
 
 int main() //CLEAR AND FİX DATA İN READ!
 {
@@ -16,18 +19,17 @@ int main() //CLEAR AND FİX DATA İN READ!
         switch (choice)
         {
         case 1:
-            reg();  // регистрация
+            reg();  
             break;
 
         case 2:
-            authorization(); // авторизация
+            authorization(); 
             break;
 
         case 3:
             std::cout << "Goodbye!\n";
             return 0;
-            break;
         }
     }
-    
+
 }
