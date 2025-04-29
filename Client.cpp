@@ -7,8 +7,10 @@
 Client::Client() : uuid_("00000000-0000-0000-0000-000000000000"){}
 Client::Client(std::string UUID) : uuid_(UUID){}
 Client::Client(const std::string& user_name, const std::string& login,
-       const std::string& password, const std::string& UUID, unsigned short rating): User(std::string(user_name),std::string(login), std::string(password), rating),
+       const std::string& password, const std::string& UUID, unsigned short rating, unsigned short ratingCount)
+    : User(user_name, login, password, rating, ratingCount),
       uuid_(UUID) {}
+
 Client::Client(const Client& other) : User(other), uuid_(other.uuid_){}
 Client::Client(Client&& other) noexcept : User(std::move(other)),  uuid_(std::move(other.uuid_)){}
 Client& Client::operator=(Client&& other) noexcept
@@ -56,22 +58,6 @@ void Client::genenerate_uuid()
 }
 
 
-void Client::rate_client(unsigned short rating) 
-{
-    
-    if (count == 0)
-    {
-        _rating = rating;
-    }
-    else
-    {
-        
-        _rating = ((_rating * count) + rating) / (count + 1);
-    }
-    
-    count += 1;
-}
-
 void Client::print_info() const
 {
     std::cout << _login << std::endl;
@@ -110,11 +96,14 @@ void write_clients(std::string filename, std::vector<Client>& data)
 
         unsigned short rating = data[i].get_rating();
         out.write(reinterpret_cast<char*>(&rating), sizeof(unsigned short));
+
+        unsigned short ratingCount = data[i].get_rating_count(); 
+        out.write(reinterpret_cast<const char*>(&ratingCount), sizeof(unsigned short));
     }
     out.close();
 }
 
-void read_clients(std::string filename, std::vector<Client>& data) {
+void read_clients(const std::string& filename, std::vector<Client>& data) {
     std::ifstream fin(filename, std::ios::binary);
     if (!fin) {
         throw std::runtime_error("Can not open file");
@@ -123,7 +112,7 @@ void read_clients(std::string filename, std::vector<Client>& data) {
     while (fin.peek() != EOF) {
         size_t user_name_size, login_size, password_size, uuid_size;
         std::string user_name, login, password, uuid;
-        unsigned short rating;
+        unsigned short rating,ratingCount;
 
         if (!fin.read(reinterpret_cast<char*>(&user_name_size), sizeof(size_t))) break;
         user_name.resize(user_name_size);
@@ -143,7 +132,9 @@ void read_clients(std::string filename, std::vector<Client>& data) {
 
         if (!fin.read(reinterpret_cast<char*>(&rating), sizeof(unsigned short))) break;
 
-        Client client(user_name, login, password, uuid, rating);
+        if (!fin.read(reinterpret_cast<char*>(&ratingCount), sizeof(unsigned short))) break;
+
+        Client client(user_name, login, password, uuid, rating, ratingCount);
         data.push_back(client);
     }
 

@@ -129,7 +129,7 @@ void read_orders(const std::string& filename, std::vector<Trip>& data)
         throw std::exception();
     }
 
-    data.clear(); 
+    
 
     std::string first_point, last_point, driver_name, client_name, driver_login, client_login;
     double price;
@@ -138,7 +138,7 @@ void read_orders(const std::string& filename, std::vector<Trip>& data)
 
     while (std::getline(fin, first_point))
     {
-        if (!std::getline(fin, first_point)) break;
+        
         if (!std::getline(fin, last_point)) break;
         if (!std::getline(fin, driver_name)) break;
         if (!std::getline(fin, driver_login)) break;

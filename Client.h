@@ -16,7 +16,7 @@ public:
     Client();
     Client(std::string UUID);
     Client(const std::string& user_name, const std::string& login,
-           const std::string& password, const std::string& UUID, unsigned short rating);
+           const std::string& password, const std::string& UUID, unsigned short rating, unsigned short ratingCount);
     Client(const Client& other);
     Client(Client&& other) noexcept;
     Client& operator=(Client&& other) noexcept;
@@ -27,12 +27,11 @@ public:
     
     void genenerate_uuid();
     unsigned short count = 0;
-    void rate_client(unsigned short rating);
 
     void print_info() const;
 
     const std::string get_name();
 };
 
-void read_clients(std::string filename, std::vector<Client>& data);
+void read_clients(const std::string& filename, std::vector<Client>& data);
 void write_clients(std::string filename, std::vector<Client>& data);

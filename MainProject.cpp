@@ -1,32 +1,31 @@
-#pragma comment(lib, "rpcrt4.lib")
+#pragma comment(lib, "Rpcrt4.lib")
+#include <iostream>
 #include "interface.h"
 
-int main() //CLEAR AND FİX DATA İN READ!
-{
-    unsigned short choice;
-    
-    while (true)
-    {
-        std::cout << "Welcome! Choose an option:\n";
+int main() {
+    std::cout << "Welcome to the Taxi Service!\n";
+
+    while (true) {
+        std::cout << "\nPlease choose an option:\n";
         std::cout << "1. Register\n";
-        std::cout << "2. Authorize (Login)\n";
+        std::cout << "2. Log In\n";
         std::cout << "3. Exit\n";
+        std::cout << "Your choice: ";
+
+        std::string choice;
         std::cin >> choice;
 
-        switch (choice)
-        {
-        case 1:
-            reg();  
+        if (choice == "1") {
+            registration();
+        } else if (choice == "2") {
+            authorization();
+        } else if (choice == "3") {
+            std::cout << "Exiting the program...\n";
             break;
-
-        case 2:
-            authorization(); 
-            break;
-
-        case 3:
-            std::cout << "Goodbye!\n";
-            return 0;
+        } else {
+            std::cout << "Invalid input. Please enter 1, 2, or 3.\n";
         }
     }
 
+    return 0;
 }

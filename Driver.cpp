@@ -6,8 +6,10 @@
 Driver::Driver() : User(), _car(), _license_number("00000000-0000-0000-0000-000000000000") {}
 
 Driver::Driver(Car* car, const std::string& user_name, const std::string& login,
-       const std::string& password, const std::string& UUID, unsigned short rating): User(std::string(user_name),std::string(login), std::string(password), rating),
+       const std::string& password, const std::string& UUID, unsigned short rating, unsigned short ratingCount)
+    : User(user_name, login, password, rating, ratingCount),
       _car(car), _license_number(UUID) {}
+
 
 Driver::Driver(const Driver& other): User(other), _car(other._car), _license_number(other._license_number) {}
 
@@ -81,45 +83,49 @@ void write_drivers(const std::string& filename, const std::vector<Driver>& data)
         throw std::runtime_error("Failed to open file for writing!");
     }
 
-    for (size_t i = 0; i < data.size(); i++)
+    for (const auto& driver : data)
     {
-        size_t user_name_size = data[i].get_name().size();
-        size_t login_size = data[i].get_login().size();
-        size_t password_size = data[i].get_password().size();
-        size_t license_size = data[i].get_license_number().size();
-        out.write(reinterpret_cast<char*>(&user_name_size), sizeof(size_t));
-        out.write(data[i].get_name().c_str(), user_name_size);
-
-        out.write(reinterpret_cast<char*>(&login_size), sizeof(size_t));
-        out.write(data[i].get_login().c_str(), login_size);
-
-        out.write(reinterpret_cast<char*>(&password_size), sizeof(size_t));
-        out.write(data[i].get_password().c_str(), password_size);
-
-        out.write(reinterpret_cast<char*>(&license_size), sizeof(size_t));
-        out.write(data[i].get_license_number().c_str(), license_size);
-
-        unsigned short rating = data[i].get_rating();
-        out.write(reinterpret_cast<char*>(&rating), sizeof(unsigned short));
-        size_t car_brand = data[i].get_car()->getBrand().size();
-        size_t car_model = data[i].get_car()->getModel().size();
-        size_t car_type = data[i].get_car()->getType().size();
+        size_t user_name_size = driver.get_name().size();
+        size_t login_size = driver.get_login().size();
+        size_t password_size = driver.get_password().size();
+        size_t license_size = driver.get_license_number().size();
         
-        out.write(reinterpret_cast<char*>(&car_brand), sizeof(size_t));
-        out.write(data[i].get_car()->getBrand().c_str(), car_brand);
-        
-        out.write(reinterpret_cast<char*>(&car_model), sizeof(size_t));
-        out.write(data[i].get_car()->getModel().c_str(), car_model);
-        
-        out.write(reinterpret_cast<char*>(&car_type), sizeof(size_t));
-        out.write(data[i].get_car()->getType().c_str(), car_type);
+        out.write(reinterpret_cast<const char*>(&user_name_size), sizeof(size_t));
+        out.write(driver.get_name().c_str(), user_name_size);
 
-        unsigned short year = data[i].get_car()->getYear();
-        out.write(reinterpret_cast<char*>(&year), sizeof(unsigned short));
+        out.write(reinterpret_cast<const char*>(&login_size), sizeof(size_t));
+        out.write(driver.get_login().c_str(), login_size);
 
-        unsigned int mileage = data[i].get_car()->getMileage();
-        out.write(reinterpret_cast<char*>(&mileage), sizeof(unsigned int));
+        out.write(reinterpret_cast<const char*>(&password_size), sizeof(size_t));
+        out.write(driver.get_password().c_str(), password_size);
+
+        out.write(reinterpret_cast<const char*>(&license_size), sizeof(size_t));
+        out.write(driver.get_license_number().c_str(), license_size);
+
+        unsigned short rating = driver.get_rating();
+        out.write(reinterpret_cast<const char*>(&rating), sizeof(unsigned short));
+
+        unsigned short ratingCount = driver.get_rating_count(); 
+        out.write(reinterpret_cast<const char*>(&ratingCount), sizeof(unsigned short));
+
+        size_t car_brand = driver.get_car()->getBrand().size();
+        size_t car_model = driver.get_car()->getModel().size();
+        size_t car_type = driver.get_car()->getType().size();
         
+        out.write(reinterpret_cast<const char*>(&car_brand), sizeof(size_t));
+        out.write(driver.get_car()->getBrand().c_str(), car_brand);
+        
+        out.write(reinterpret_cast<const char*>(&car_model), sizeof(size_t));
+        out.write(driver.get_car()->getModel().c_str(), car_model);
+        
+        out.write(reinterpret_cast<const char*>(&car_type), sizeof(size_t));
+        out.write(driver.get_car()->getType().c_str(), car_type);
+
+        unsigned short year = driver.get_car()->getYear();
+        out.write(reinterpret_cast<const char*>(&year), sizeof(unsigned short));
+
+        unsigned int mileage = driver.get_car()->getMileage();
+        out.write(reinterpret_cast<const char*>(&mileage), sizeof(unsigned int));
     }
 
     out.close();
@@ -159,6 +165,9 @@ void read_drivers(const std::string& filename, std::vector<Driver>& data)
         unsigned short rating;
         in.read(reinterpret_cast<char*>(&rating), sizeof(unsigned short));
 
+        unsigned short ratingCount;
+        in.read(reinterpret_cast<char*>(&ratingCount), sizeof(unsigned short)); 
+
         size_t brand_size;
         in.read(reinterpret_cast<char*>(&brand_size), sizeof(size_t));
         std::string brand(brand_size, '\0');
@@ -181,7 +190,6 @@ void read_drivers(const std::string& filename, std::vector<Driver>& data)
         in.read(reinterpret_cast<char*>(&mileage), sizeof(unsigned int));
 
         Car* car = nullptr;
-        /*Car* car = new Car(brand, model, type, year, mileage);*/
         if (type == "econom")
         {
             car = new EconomCar(brand, model, type, year, mileage);
@@ -194,10 +202,11 @@ void read_drivers(const std::string& filename, std::vector<Driver>& data)
         {
             car = new BusinessCar(brand, model, type, year, mileage);
         }
-        Driver driver(car, name, login, password, license, rating);
 
+        Driver driver(car, name, login, password, license, rating, ratingCount); 
         data.push_back(driver);
     }
     
     in.close();
+    
 }

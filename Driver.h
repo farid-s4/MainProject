@@ -17,7 +17,7 @@ private:
 public:
     Driver();
     Driver(Car* car, const std::string& user_name, const std::string& login,
-           const std::string& password, const std::string& UUID, unsigned short rating);
+       const std::string& password, const std::string& UUID, unsigned short rating, unsigned short ratingCount);
     Driver(const Driver& other);
     Driver(Driver&& other) noexcept;
 
@@ -35,6 +35,10 @@ public:
     unsigned short count = 0;
     
     void printinfo();
+    ~Driver()
+    {
+        delete _car;
+    }
 };
 
 void read_drivers(const std::string& filename, std::vector<Driver>& data);
