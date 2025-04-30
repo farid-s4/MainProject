@@ -56,3 +56,4 @@ void read_orders(const std::string& filename, std::vector<Trip>& trips);
 void write_orders(const std::string& filename, const std::vector<Trip>& trips);
 
 void cleanup();
+void adminMenu();

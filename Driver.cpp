@@ -139,7 +139,7 @@ void read_drivers(const std::string& filename, std::vector<Driver>& data)
     {
         throw std::runtime_error("Failed to open file for reading!");
     }
-
+    data.clear();
     while (in.peek() != EOF)
     {
         size_t user_name_size;

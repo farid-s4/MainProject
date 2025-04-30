@@ -128,7 +128,7 @@ void read_orders(const std::string& filename, std::vector<Trip>& data)
     {
         throw std::exception();
     }
-
+    data.clear();
     
 
     std::string first_point, last_point, driver_name, client_name, driver_login, client_login;
