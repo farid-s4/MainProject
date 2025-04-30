@@ -37,6 +37,7 @@ void loadDrivers() {
 void unload_drivers() {
     try {
         write_drivers("AllData/drivers.bin", drivers);
+        
     } catch (const std::exception& e) {
         std::cout << e.what() << '\n';
     }
@@ -623,13 +624,13 @@ void cleanup() {
 
 void adminMenu() {
     while (true) {
-        std::cout << "\n🛠 Admin Panel:\n";
+        std::cout << "\nAdmin Panel:\n";
         std::cout << "1. Edit car data\n";
         std::cout << "2. Schedule maintenance (check mileage)\n";
-        std::cout << "4. Trip statistics\n";
-        std::cout << "5. Driver/company profit\n";
-        std::cout << "6. Most popular routes\n";
-        std::cout << "7. Exit admin panel\n";
+        std::cout << "3. Trip statistics\n";
+        std::cout << "4. Driver/company profit\n";
+        std::cout << "5. Most popular routes\n";
+        std::cout << "6. Exit admin panel\n";
 
         int choice;
         while (true) {
@@ -645,100 +646,150 @@ void adminMenu() {
             }
         }
 
-        switch (choice) {
+        switch (choice)
+        {
         case 1: {
-            
-            std::cout << "Function not implemented yet.\n";
-            break;
-        }
-        case 2: {
-            loadDrivers();
-            std::cin.ignore(); 
-            std::string driver_name;
-            std::cout << "Enter your name: ";
-            std::getline(std::cin, driver_name);
+                loadDrivers();
+                std::cin.ignore(); 
+                std::string driver_name;
+                std::cout << "Enter your name: ";
+                std::getline(std::cin, driver_name);
 
-            Driver* selectedDriver = nullptr;
-            for (auto& driver : drivers) {
-                if (driver.get_name() == driver_name) {
-                    selectedDriver = &driver;
+                Driver* selectedDriver = nullptr;
+                for (auto& driver : drivers) {
+                    if (driver.get_name() == driver_name) {
+                        selectedDriver = &driver;
+                        break;
+                    }
+                }
+
+                if (!selectedDriver) {
+                    std::cout << "No such driver.\n";
                     break;
                 }
-            }
 
-            if (!selectedDriver) {
-                std::cout << "No such driver.\n";
-                break;
-            }
+                std::string brand, model, carTypeChoice, carType;
+                unsigned int mileage;
+                unsigned short year, carChoice;
 
-            std::string brand, model, carTypeChoice, carType;
-            unsigned int mileage;
-            unsigned short year, carChoice;
+                std::cout << "Enter your car brand: ";
+                std::getline(std::cin, brand);
 
-            std::cout << "Enter your car brand: ";
-            std::getline(std::cin, brand);
+                std::cout << "Enter your car model: ";
+                std::getline(std::cin, model);
 
-            std::cout << "Enter your car model: ";
-            std::getline(std::cin, model);
+                std::cout << "Choose car type (1 - Econom, 2 - Comfort, 3 - Business): ";
+                std::cin >> carTypeChoice;
 
-            std::cout << "Choose car type (1 - Econom, 2 - Comfort, 3 - Business): ";
-            std::cin >> carTypeChoice;
+                if (carTypeChoice == "1") carChoice = 1;
+                else if (carTypeChoice == "2") carChoice = 2;
+                else if (carTypeChoice == "3") carChoice = 3;
+                else {
+                    std::cout << "Invalid car type choice.\n";
+                    break;
+                }
 
-            if (carTypeChoice == "1") carChoice = 1;
-            else if (carTypeChoice == "2") carChoice = 2;
-            else if (carTypeChoice == "3") carChoice = 3;
-            else {
-                std::cout << "Invalid car type choice.\n";
-                break;
-            }
+                std::cout << "Enter car manufacture year: ";
+                std::cin >> year;
 
-            std::cout << "Enter car manufacture year: ";
-            std::cin >> year;
+                std::cout << "Enter car mileage (km): ";
+                std::cin >> mileage;
 
-            std::cout << "Enter car mileage (km): ";
-            std::cin >> mileage;
-
-            switch (carChoice) {
+                switch (carChoice) {
                 case 1: carType = "econom"; break;
                 case 2: carType = "comfort"; break;
                 case 3: carType = "business"; break;
                 default: carType = "econom"; break;
-            }
+                }
 
-            Car* car = nullptr;
-            if (carType == "econom") car = new EconomCar(brand, model, carType, year, mileage);
-            else if (carType == "comfort") car = new ComfortCar(brand, model, carType, year, mileage);
-            else if (carType == "business") car = new BusinessCar(brand, model, carType, year, mileage);
+                Car* car = nullptr;
+                if (carType == "econom") car = new EconomCar(brand, model, carType, year, mileage);
+                else if (carType == "comfort") car = new ComfortCar(brand, model, carType, year, mileage);
+                else if (carType == "business") car = new BusinessCar(brand, model, carType, year, mileage);
 
-            selectedDriver->set_car(car);
+                selectedDriver->set_car(car);
 
-            std::cout << "Car successfully assigned to driver: " << selectedDriver->get_name() << "\n";
-            unload_drivers();
-            break;
+                std::cout << "Car successfully assigned to driver: " << selectedDriver->get_name() << "\n";
+                unload_drivers();
+                break;
         }
-        case 3: {
-            loadDrivers();
-            for (auto& driver : drivers) {
-                Car* car = driver.get_car();
+        case 2: {
+                loadDrivers();
+                for (auto& driver : drivers) {
+                    Car* car = driver.get_car();
                 
-                if (!car) continue;
+                    if (!car) continue;
             
-                if (driver.get_car()->getMileage() > 50000) {
-                    std::cout << "Driver: " << driver.get_name()
-                              << " — Car: " << car->getBrand() << " " << car->getModel()
-                              << " (Mileage: " << car->getMileage() << ") needs maintenance.\n";
+                    if (driver.get_car()->getMileage() > 50000) {
+                        std::cout << "Driver: " << driver.get_name()
+                                  << " — Car: " << car->getBrand() << " " << car->getModel()
+                                  << " (Mileage: " << car->getMileage() << ") needs maintenance.\n";
+                    }
+                    else
+                    {
+                        std::cout << "Driver: " << driver.get_name() << " <UNK> Car: " << car->getBrand() << ", Dont need maintenance" << "\n";
+                    }
                 }
-                else
-                {
-                    std::cout << "All cars dont need maintenance." << "\n";
-                }
-            }
-            break;
+                
+                break;
         }
-        case 0:
-            return;
-        default:
-            std::cout << "Invalid choice.\n";
+        case 3:
+            {
+                loadTrips();
+                loadDrivers();
+                std::cout << "Trip Statistics\n";
+
+                std::cout << "Total trips: " << trips.size() << '\n';
+
+                unsigned int totalRating = 0;
+                unsigned short avgRating = 0;
+
+                for (const auto& driver : drivers) {
+                    totalRating += driver.get_rating();
+                }
+
+                if (!drivers.empty()) {
+                    avgRating = static_cast<unsigned short>((totalRating + drivers.size() / 2) / drivers.size()); 
+                }
+
+                std::cout << "Avg rating: " << avgRating << '\n';
+                break;
+            }
+        case 4:
+            {
+                loadTrips();
+                loadDrivers();
+
+                unsigned int totalCompanyProfit = 0;
+
+                for (const auto& driver : drivers) {
+                    unsigned int driverProfit = 0;
+
+                    for (auto& trip : trips) {
+                        if (trip.get_driver().get_name() == driver.get_name()) {
+                            driverProfit += trip.get_price();
+                        }
+                    }
+
+                    totalCompanyProfit += driverProfit;
+
+                    std::cout << "Driver: " << driver.get_name()
+                              << " — Profit: " << driverProfit << "\n";
+                }
+
+                std::cout << "Total company profit: " << totalCompanyProfit << "\n";
+                break;
+            }
+        case 5:
+            {
+                std::cout<<"jart";
+                break;
+            }
+        case 6:
+            {
+                std::cout << "Exit";
+                return;
+            }
         }
     }
 }
