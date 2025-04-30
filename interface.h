@@ -28,7 +28,7 @@ extern std::vector<Trip> trips;
 void clearInputBuffer();
 void loadClients();
 void unloadClients();
-void load_drivers();
+void loadDrivers();
 void unload_drivers();
 void load_trips();
 void unload_trips();
@@ -55,3 +55,4 @@ void write_drivers(const std::string& filename, const std::vector<Driver>& drive
 void read_orders(const std::string& filename, std::vector<Trip>& trips);
 void write_orders(const std::string& filename, const std::vector<Trip>& trips);
 
+void cleanup();

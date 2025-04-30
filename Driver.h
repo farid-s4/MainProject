@@ -35,10 +35,6 @@ public:
     unsigned short count = 0;
     
     void printinfo();
-    ~Driver()
-    {
-        delete _car;
-    }
 };
 
 void read_drivers(const std::string& filename, std::vector<Driver>& data);

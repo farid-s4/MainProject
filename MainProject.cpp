@@ -3,6 +3,7 @@
 #include "interface.h"
 
 int main() {
+    print_drivers();
     std::cout << "Welcome to the Taxi Service!\n";
 
     while (true) {
@@ -21,11 +22,12 @@ int main() {
             authorization();
         } else if (choice == "3") {
             std::cout << "Exiting the program...\n";
+            cleanup();
             break;
         } else {
             std::cout << "Invalid input. Please enter 1, 2, or 3.\n";
         }
     }
-
+    
     return 0;
 }

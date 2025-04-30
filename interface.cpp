@@ -32,7 +32,7 @@ void loadDrivers() {
     }
 }
 
-void unloadDrivers() {
+void unload_drivers() {
     try {
         write_drivers("AllData/drivers.bin", drivers);
     } catch (const std::exception& e) {
@@ -201,10 +201,10 @@ void registerDriver() {
 
     std::cout << "Enter your car brand: ";
     std::getline(std::cin, brand);
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    
     std::cout << "Enter your car model: ";
     std::getline(std::cin, model);
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    
     std::cout << "Choose car type (1 - Econom, 2 - Comfort, 3 - Business): ";
     std::cin >> carTypeChoice;
     if (carTypeChoice == "1")
@@ -268,7 +268,7 @@ void registerDriver() {
     newDriver.generate_license_number();
 
     drivers.push_back(newDriver);
-    unloadDrivers();
+    unload_drivers();
 
     delete car;
     std::cout << "Driver registered successfully.\n";
@@ -292,7 +292,7 @@ void authorization() {
     std::string choice;
     std::cout << "Who are you? (1 - Client, 2 - Driver): ";
     std::cin >> choice;
-
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     if (choice == "1" || choice == "client" || choice == "Client") {
         loadClients();
         std::string login, password;
@@ -311,6 +311,7 @@ void authorization() {
                 break; 
             }
         }
+        
         while (true)
         {
             std::cout << "Enter your password (no spaces allowed): ";
@@ -411,9 +412,10 @@ void authorization() {
                 Trip trip(firstPoint, lastPoint, selectedDriver, authorizedClient, TripStatus::Created, distance);
                 trip.calculate_price(selectedDriver, distance);
                 trips.push_back(trip);
-                unloadTrips();
+                
                 
                 std::cout << "Trip booked successfully with driver: " << selectedDriver.get_name() << '\n';
+                unloadTrips();
 
             }
             else if (choice == "2") {
@@ -476,8 +478,8 @@ void authorization() {
                 }
 
                 selectedDriver->set_rating(rating);
-                std::cout << "Trip booked successfully with driver: " << selectedDriver->get_name() << '\n';
-                unloadDrivers();
+                std::cout << "Rating: " << selectedDriver->get_name() << " updated" << '\n';
+                unload_drivers();
             }
             else if (choice == "4")
             {
@@ -558,19 +560,31 @@ void authorization() {
             else {
                 std::cout << "Invalid choice.\n";
             }
+            
         }
     } else {
         std::cout << "Invalid choice.\n";
     }
 }
 
-void printDrivers() {
+void print_drivers() {
     loadDrivers();
     for (const auto& driver : drivers) {
         std::cout << driver.get_name() << ", "
                   << driver.get_login() << ", "
+        << driver.get_password() << ", "
+        << driver.get_license_number() << ", "
+        << driver.get_rating() << ", "
                   << driver.get_car()->getBrand() << " "
                   << driver.get_car()->getModel() << " ("
                   << driver.get_car()->getType() << ")\n";
+                        
     }
+    
+}
+void cleanup() {
+    for (Driver& d : drivers) {
+        delete d.get_car();
+    }
+    drivers.clear();
 }

@@ -36,5 +36,5 @@ public:
     void update_car_info(const std::string& brand, const std::string& model, const std::string& type, unsigned short year, unsigned int mileage);
 
     bool maintence();
-    virtual ~Car(){}
+    virtual ~Car() = default;
 };
