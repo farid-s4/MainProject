@@ -11,7 +11,7 @@ void clearInputBuffer() {
 
 void loadClients() {
     try {
-        read_clients("AllData/clients.bin", clients);
+        read_clients("Debug/AllData/clients.bin", clients);
     } catch (const std::exception& e) {
         std::cout << e.what() << '\n';
     }
@@ -19,7 +19,7 @@ void loadClients() {
 
 void unloadClients() {
     try {
-        write_clients("AllData/clients.bin", clients);
+        write_clients("Debug/AllData/clients.bin", clients);
     } catch (const std::exception& e) {
         std::cout << e.what() << '\n';
     }
@@ -27,7 +27,7 @@ void unloadClients() {
 
 void loadDrivers() {
     try {
-        read_drivers("AllData/drivers.bin", drivers);
+        read_drivers("Debug/AllData/drivers.bin", drivers);
     } catch (const std::exception& e) {
         std::cout << e.what() << '\n';
     }
@@ -35,7 +35,7 @@ void loadDrivers() {
 
 void unload_drivers() {
     try {
-        write_drivers("AllData/drivers.bin", drivers);
+        write_drivers("Debug/AllData/drivers.bin", drivers);
         
     } catch (const std::exception& e) {
         std::cout << e.what() << '\n';
@@ -44,7 +44,7 @@ void unload_drivers() {
 
 void loadTrips() {
     try {
-        read_orders("AllData/orders.txt", trips);
+        read_orders("Debug/AllData/orders.txt", trips);
     } catch (const std::exception& e) {
         std::cout << e.what() << '\n';
     }
@@ -52,7 +52,7 @@ void loadTrips() {
 
 void unloadTrips() {
     try {
-        write_orders("AllData/orders.txt", trips);
+        write_orders("Debug/AllData/orders.txt", trips);
     } catch (const std::exception& e) {
         std::cout << e.what() << '\n';
     }

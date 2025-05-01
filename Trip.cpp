@@ -106,7 +106,7 @@ void write_orders(const std::string& filename, std::vector<Trip>& data)
 
     if (!out)
     {
-        throw std::exception();
+        throw std::runtime_error("Failed to open file for writing! / File created.");
     }
     for (int i = 0; i < data.size(); i++)
     {

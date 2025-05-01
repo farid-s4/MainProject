@@ -76,7 +76,7 @@ void write_drivers(const std::string& filename, const std::vector<Driver>& data)
     std::ofstream out(filename, std::ios::binary);
     if (!out)
     {
-        throw std::runtime_error("Failed to open file for writing!");
+        throw std::runtime_error("Failed to open file for writing! / File created.");
     }
 
     for (const auto& driver : data)
