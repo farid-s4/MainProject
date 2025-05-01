@@ -1,5 +1,5 @@
 ﻿#include "CarType.h"
-#include <stdexcept>  
+#include <stdexcept>
 
 EconomCar::EconomCar() : Car() {}
 
@@ -10,8 +10,11 @@ double EconomCar::calculate_price(const double& distance) {
     if (distance <= 0) {
         throw std::invalid_argument("Write correct distance.");
     }
-    double one_km_price = 2.0;
-    return distance * one_km_price;
+    return distance * 2.0;
+}
+
+std::unique_ptr<Car> EconomCar::clone() const {
+    return std::make_unique<EconomCar>(*this);
 }
 
 
@@ -22,8 +25,11 @@ double ComfortCar::calculate_price(const double& distance) {
     if (distance <= 0) {
         throw std::invalid_argument("Write correct distance.");
     }
-    double one_km_price = 3.5;
-    return distance * one_km_price;
+    return distance * 3.5;
+}
+
+std::unique_ptr<Car> ComfortCar::clone() const {
+    return std::make_unique<ComfortCar>(*this);
 }
 
 
@@ -34,6 +40,9 @@ double BusinessCar::calculate_price(const double& distance) {
     if (distance <= 0) {
         throw std::invalid_argument("Write correct distance.");
     }
-    double one_km_price = 5.0;
-    return distance * one_km_price;
+    return distance * 5.0;
+}
+
+std::unique_ptr<Car> BusinessCar::clone() const {
+    return std::make_unique<BusinessCar>(*this);
 }

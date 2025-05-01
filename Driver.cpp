@@ -1,72 +1,68 @@
 ﻿#include "Driver.h"
-
 #include <iostream>
+#include <fstream>
 #include <windows.h>
 
-Driver::Driver() : User(), _car(), _license_number("00000000-0000-0000-0000-000000000000") {}
+Driver::Driver() : User(), _car(nullptr), _license_number("00000000-0000-0000-0000-000000000000") {}
 
-Driver::Driver(Car* car, const std::string& user_name, const std::string& login,
-       const std::string& password, const std::string& UUID, unsigned short rating, unsigned short ratingCount)
+Driver::Driver(std::unique_ptr<Car> car, const std::string& user_name, const std::string& login,
+               const std::string& password, const std::string& UUID, unsigned short rating, unsigned short ratingCount)
     : User(user_name, login, password, rating, ratingCount),
-      _car(car), _license_number(UUID) {}
+      _car(std::move(car)), _license_number(UUID) {}
 
+Driver::Driver(const Driver& other)
+    : User(other),
+      _car(other._car ? other._car->clone() : nullptr),
+      _license_number(other._license_number) {}
 
-Driver::Driver(const Driver& other): User(other), _car(other._car), _license_number(other._license_number) {}
-
-Driver::Driver(Driver&& other) noexcept : User(std::move(other))
-{
-    _car = std::move(other._car);
-    _license_number = std::move(other._license_number);
-}
-Driver& Driver::operator=(Driver&& other) noexcept
-{
-    if (this != &other)
-    {
-        User::operator=(std::move(other));
-        _car = std::move(other._car);
-        _license_number = std::move(other._license_number);
-        return *this;
-    }
-    return *this;
-}
-Driver& Driver::operator=(const Driver& other) 
-{
-    if (this != &other)
-    {
+Driver& Driver::operator=(const Driver& other) {
+    if (this != &other) {
         User::operator=(other);
-        _car = other._car;
+        _car = other._car ? other._car->clone() : nullptr;
         _license_number = other._license_number;
     }
     return *this;
 }
-void Driver::set_license_number(const std::string& number)
-{
+
+Driver::Driver(Driver&& other) noexcept
+    : User(std::move(other)),
+      _car(std::move(other._car)),
+      _license_number(std::move(other._license_number)) {}
+
+Driver& Driver::operator=(Driver&& other) noexcept {
+    if (this != &other) {
+        User::operator=(std::move(other));
+        _car = std::move(other._car);
+        _license_number = std::move(other._license_number);
+    }
+    return *this;
+}
+
+void Driver::set_license_number(const std::string& number) {
     _license_number = number;
 }
-void Driver::set_car(Car* car)
-{
-    _car = car;
+
+void Driver::set_car(std::unique_ptr<Car> car) {
+    _car = std::move(car);
 }
+
 const std::string& Driver::get_license_number() const {
     return _license_number;
 }
 
 Car* Driver::get_car() const {
-    return _car;
+    return _car.get();
 }
-void  Driver::generate_license_number()
-{
+
+void Driver::generate_license_number() {
     UUID uuid;
     UuidCreate(&uuid);
-
     unsigned char* str;
     UuidToStringA(&uuid, &str);
-
-    _license_number = reinterpret_cast<char*>(str); 
-    
-    RpcStringFreeA(&str); 
+    _license_number = reinterpret_cast<char*>(str);
+    RpcStringFreeA(&str);
 }
-void Driver::printinfo()
+void Driver::printinfo() const 
 {
     std::cout << _user_name << '\n' << _login
     <<'\n' << _password <<'\n' << _rating
@@ -189,23 +185,18 @@ void read_drivers(const std::string& filename, std::vector<Driver>& data)
         unsigned int mileage;
         in.read(reinterpret_cast<char*>(&mileage), sizeof(unsigned int));
 
-        Car* car = nullptr;
-        
-        if (type == "econom")
-        {
-            car = new EconomCar(brand, model, type, year, mileage);
+        std::unique_ptr<Car> car;
+
+        if (type == "econom") {
+            car = std::make_unique<EconomCar>(brand, model, type, year, mileage);
+        } else if (type == "comfort") {
+            car = std::make_unique<ComfortCar>(brand, model, type, year, mileage);
+        } else if (type == "business") {
+            car = std::make_unique<BusinessCar>(brand, model, type, year, mileage);
         }
-        else if (type == "comfort")
-        {
-            car = new ComfortCar(brand, model, type, year, mileage);
-        }
-        else if (type == "business")
-        {
-            car = new BusinessCar(brand, model, type, year, mileage);
-        }
-        
-        Driver driver(car, name, login, password, license, rating, ratingCount); 
-        data.push_back(driver);
+
+        Driver driver(std::move(car), name, login, password, license, rating, ratingCount);
+        data.push_back(std::move(driver));
     }
     
     in.close();

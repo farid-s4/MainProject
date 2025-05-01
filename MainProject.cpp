@@ -18,6 +18,7 @@ int main() {
 
         if (choice == "1") {
             registration();
+
         }
         else if (choice == "2") {
             authorization();

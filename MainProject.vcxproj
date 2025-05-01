@@ -155,7 +155,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Car.cpp" />
-    <ClCompile Include="CarManager.cpp" />
     <ClCompile Include="CarType.cpp" />
     <ClCompile Include="Client.cpp" />
     <ClCompile Include="Driver.cpp" />
@@ -166,7 +165,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Car.h" />
-    <ClInclude Include="CarManager.h" />
     <ClInclude Include="CarType.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="Driver.h" />

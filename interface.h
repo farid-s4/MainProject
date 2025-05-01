@@ -4,9 +4,6 @@
 #include "Trip.h"
 #include "User.h"
 #include <iostream>
-#pragma once
-
-#include <iostream>
 #include <vector>
 #include <string>
 

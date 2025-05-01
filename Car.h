@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <memory>
 #include <stdexcept>
 #include <string>
 
@@ -30,6 +31,8 @@ public:
     void setType(const std::string& type);
     void setYear(unsigned short year);
     void setMileage(unsigned int mileage);
+
+    virtual std::unique_ptr<Car> clone() const = 0;
 
     virtual double calculate_price(const double& distanse);
 

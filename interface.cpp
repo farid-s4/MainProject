@@ -1,6 +1,5 @@
 ﻿#include "interface.h"
 
-#include "CarManager.h"
 
 std::vector<Driver> drivers;
 std::vector<Client> clients;
@@ -257,23 +256,28 @@ void registerDriver() {
         default: carType = "econom"; break;
     }
 
-    Car* car = nullptr;
-    if (carType == "econom") car = new EconomCar(brand, model, carType, year, mileage);
-    else if (carType == "comfort") car = new ComfortCar(brand, model, carType, year, mileage);
-    else if (carType == "business") car = new BusinessCar(brand, model, carType, year, mileage);
+    std::unique_ptr<Car> car;
+
+    if (carType == "econom") {
+        car = std::make_unique<EconomCar>(brand, model, carType, year, mileage);
+    } else if (carType == "comfort") {
+        car = std::make_unique<ComfortCar>(brand, model, carType, year, mileage);
+    } else if (carType == "business") {
+        car = std::make_unique<BusinessCar>(brand, model, carType, year, mileage);
+    }
 
     Driver newDriver;
     newDriver.set_name(name);
     newDriver.set_login(login);
     newDriver.set_password(password);
     newDriver.set_rating(10);
-    newDriver.set_car(car);
+    newDriver.set_car(std::move(car));  
     newDriver.generate_license_number();
 
-    drivers.push_back(newDriver);
+    drivers.push_back(std::move(newDriver));  
     unload_drivers();
 
-    delete car;
+    
     std::cout << "Driver registered successfully.\n";
 }
 
@@ -383,11 +387,11 @@ void authorization() {
                 {
                     carType = 1;
                 }
-                if (car_case_shoose == "2")
+                else if (car_case_shoose == "2")
                 {
                     carType = 2;
                 }
-                if (car_case_shoose == "3")
+                else if (car_case_shoose == "3")
                 {
                     carType = 3;
                 }
@@ -417,7 +421,7 @@ void authorization() {
                         }
                     }
                 }
-                if (choose_rating == "2")
+                else if (choose_rating == "2")
                 {
                     for (auto& driver : drivers) {
                         if (driver.get_car()->getType() == carTypeChoice && driver.get_rating() > 6 && driver.get_rating() <= 10) {
@@ -702,12 +706,16 @@ void adminMenu() {
                 default: carType = "econom"; break;
                 }
 
-                Car* car = nullptr;
-                if (carType == "econom") car = new EconomCar(brand, model, carType, year, mileage);
-                else if (carType == "comfort") car = new ComfortCar(brand, model, carType, year, mileage);
-                else if (carType == "business") car = new BusinessCar(brand, model, carType, year, mileage);
+                std::unique_ptr<Car> car;
 
-                selectedDriver->set_car(car);
+                if (carType == "econom")
+                    car = std::make_unique<EconomCar>(brand, model, carType, year, mileage);
+                else if (carType == "comfort")
+                    car = std::make_unique<ComfortCar>(brand, model, carType, year, mileage);
+                else if (carType == "business")
+                    car = std::make_unique<BusinessCar>(brand, model, carType, year, mileage);
+
+                selectedDriver->set_car(std::move(car));
 
                 std::cout << "Car successfully assigned to driver: " << selectedDriver->get_name() << "\n";
                 unload_drivers();
@@ -727,7 +735,7 @@ void adminMenu() {
                     }
                     else
                     {
-                        std::cout << "Driver: " << driver.get_name() << " <UNK> Car: " << car->getBrand() << ", Dont need maintenance" << "\n";
+                        std::cout << "Driver: " << driver.get_name() << " Car: " << car->getBrand() << ", Dont need maintenance" << "\n";
                     }
                 }
                 
@@ -782,7 +790,46 @@ void adminMenu() {
             }
         case 5:
             {
-                std::cout<<"jart";
+                struct trips_count
+                {
+                    std::string FirstP;
+                    std::string LastP;
+                    unsigned int maxCount = 0;
+                };
+                std::vector<trips_count> t;
+
+                for (auto& trip : trips)
+                {
+                    std::string first = trip.get_first_point();
+                    std::string last = trip.get_last_point();
+
+                    bool found = false;
+                    for (auto& tr : t)
+                    {
+                        if (tr.FirstP == first && tr.LastP == last)
+                        {
+                            tr.maxCount++;
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                    {
+                        trips_count new_tr;
+                        new_tr.FirstP = first;
+                        new_tr.LastP = last;
+                        new_tr.maxCount = 1;
+                        t.push_back(new_tr);
+                    }
+                }
+
+                
+                for (const auto& tr : t)
+                {
+                    std::cout << "Route: " << tr.FirstP << " -> " << tr.LastP
+                              << ", Count: " << tr.maxCount << '\n';
+                }
                 break;
             }
         case 6:
