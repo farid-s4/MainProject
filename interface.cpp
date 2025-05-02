@@ -213,15 +213,19 @@ void registerDriver() {
     {
         carChoice = 1;
     }
-    if (carTypeChoice == "2")
+    else if (carTypeChoice == "2")
     {
         carChoice = 2;
     }
-    if (carTypeChoice == "3")
+    else if (carTypeChoice == "3")
     {
         carChoice = 3;
     }
-    
+    else
+    {
+        std::cout << "Invalid choice.\n";
+        return;
+    }
     while (true) {
         std::cout << "Enter car manufacture year: ";
         std::cin >> year;
